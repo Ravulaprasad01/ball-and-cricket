@@ -1,0 +1,5 @@
+{
+  "name": "Cricket Score Tracker",
+  "description": "A comprehensive cricket scoring application to track matches between two teams across two innings. It supports custom player counts and names, various scoring actions like runs, extras, and wickets, and provides a detailed over-by-over score history for each innings.",
+  "requestFramePermissions": []
+}

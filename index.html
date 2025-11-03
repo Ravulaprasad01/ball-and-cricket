@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cricket Score Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'cricket-green': {
+                'light': '#3a8c41',
+                'DEFAULT': '#2a5c2e',
+                'dark': '#1e4221',
+              },
+              'pitch-brown': '#b9a18c',
+              'stump-white': '#f5f5f5',
+              'ball-red': '#b53737',
+              'night': '#121212',
+              'surface': '#1e1e1e',
+              'primary': '#4CAF50',
+              'secondary': '#FFC107',
+            },
+            fontFamily: {
+              sans: ['Poppins', 'Inter', 'sans-serif'],
+            },
+            animation: {
+              'coin-flip': 'coin-flip 1s ease-out forwards',
+              'fade-in': 'fade-in 0.5s ease-out forwards',
+              'pop-in': 'pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+              'boundary-4-glow': 'boundary-4-glow 1.5s ease-out forwards',
+              'boundary-6-glow': 'boundary-6-glow 1.5s ease-out forwards',
+              'wicket-glow': 'wicket-glow 1.5s ease-out forwards',
+              'event-burst': 'event-burst 1.5s ease-in-out forwards',
+            },
+            keyframes: {
+              'coin-flip': {
+                '0%': { transform: 'translateY(0) rotateY(0)' },
+                '50%': { transform: 'translateY(-100px) rotateY(1080deg)' },
+                '100%': { transform: 'translateY(0) rotateY(1800deg)' },
+              },
+              'fade-in': {
+                'from': { opacity: '0', transform: 'translateY(10px)' },
+                'to': { opacity: '1', transform: 'translateY(0)' },
+              },
+              'pop-in': {
+                '0%': { transform: 'scale(0.8)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' },
+              },
+              'boundary-4-glow': {
+                '0%': { boxShadow: '0 0 0 0 rgba(59, 130, 246, 0)' },
+                '50%': { boxShadow: '0 0 25px 10px rgba(59, 130, 246, 0.5)' },
+                '100%': { boxShadow: '0 0 50px 20px rgba(59, 130, 246, 0)' },
+              },
+              'boundary-6-glow': {
+                '0%': { boxShadow: '0 0 0 0 rgba(168, 85, 247, 0)' },
+                '50%': { boxShadow: '0 0 25px 10px rgba(168, 85, 247, 0.5)' },
+                '100%': { boxShadow: '0 0 50px 20px rgba(168, 85, 247, 0)' },
+              },
+              'wicket-glow': {
+                '0%': { boxShadow: '0 0 0 0 rgba(239, 68, 68, 0)' },
+                '50%': { boxShadow: '0 0 25px 10px rgba(239, 68, 68, 0.6)' },
+                '100%': { boxShadow: '0 0 50px 20px rgba(239, 68, 68, 0)' },
+              },
+              'event-burst': {
+                '0%': { opacity: '0', transform: 'scale(0.6) rotate(-10deg)' },
+                '30%': { opacity: '1', transform: 'scale(1.1) rotate(2deg)' },
+                '80%': { opacity: '1', transform: 'scale(1.1) rotate(2deg)' },
+                '100%': { opacity: '0', transform: 'scale(1.5) rotate(5deg)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-night text-white font-sans">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
