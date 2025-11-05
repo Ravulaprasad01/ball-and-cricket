@@ -1,15 +1,24 @@
-import React, { useReducer, useState } from 'react';
+import React, { useReducer, useState, useEffect } from 'react';
 import { GameStatus, GameState, MatchSettings, Player, Team, Innings, Ball } from './types';
 import { BALLS_PER_OVER } from './constants';
+import { generateCommentary } from './utils/commentary';
 import SetupScreen from './components/SetupScreen';
 import ScoringScreen from './components/ScoringScreen';
 import TossScreen from './components/TossScreen';
 import ScoreHistory from './components/ScoreHistory';
 import PlayerStats from './components/PlayerStats';
 import MatchSummary from './components/MatchSummary';
+import LoadingScreen from './components/LoadingScreen';
 import { HistoryIcon } from './components/icons/HistoryIcon';
 import { StatsIcon } from './components/icons/StatsIcon';
-import { CricketBallIcon } from './components/icons/CricketBallIcon';
+import { Logo } from './components/icons/Logo';
+import { SoundOnIcon } from './components/icons/SoundOnIcon';
+import { SoundOffIcon } from './components/icons/SoundOffIcon';
+import { ThemeIcon } from './components/icons/ThemeIcon';
+import { SunIcon } from './components/icons/SunIcon';
+import { MoonIcon } from './components/icons/MoonIcon';
+
+type Theme = 'light' | 'dark' | 'sunset';
 
 const initialInnings = (battingTeam: string, bowlingTeam: string): Innings => ({
   score: 0,
@@ -39,6 +48,7 @@ const initialState: GameState = {
   tossWinner: null,
   choseTo: null,
   lastEvent: 'none',
+  commentary: null,
 };
 
 function gameReducer(state: GameState, action: any): GameState {
@@ -87,6 +97,8 @@ function gameReducer(state: GameState, action: any): GameState {
         battingTeam.players[0].isBatting = true;
         battingTeam.players[1].isBatting = true;
 
+        const commentary = `Welcome to the match between ${settings.teamOneName} and ${settings.teamTwoName}. ${tossWinner} won the toss and chose to ${choseTo}. Let's get started!`;
+
         return {
             ...state,
             teams: newTeams,
@@ -98,15 +110,25 @@ function gameReducer(state: GameState, action: any): GameState {
             nonStrikerId: battingTeam.players[1].id,
             tossWinner,
             choseTo,
+            commentary,
         };
     }
     
     case 'SET_BOWLER': {
-        return { ...state, currentBowlerId: action.payload.bowlerId };
+        const bowler = state.teams[state.bowlingTeamIndex].players.find(p => p.id === action.payload.bowlerId);
+        return { 
+            ...state, 
+            currentBowlerId: action.payload.bowlerId,
+            commentary: `The new bowler is ${bowler?.name}.`,
+        };
     }
-    
+
     case 'CLEAR_LAST_EVENT': {
         return { ...state, lastEvent: 'none' };
+    }
+
+    case 'CLEAR_COMMENTARY': {
+        return { ...state, commentary: null };
     }
 
     case 'ADD_RUNS':
@@ -141,14 +163,13 @@ function gameReducer(state: GameState, action: any): GameState {
       // --- Initialize next state variables ---
       let nextStrikerId = strikerId;
       let nextNonStrikerId = nonStrikerId;
-      // FIX: Explicitly type nextStatus as GameStatus to prevent incorrect type inference within this block.
-      // This resolves errors when assigning different GameStatus members later on.
       let nextStatus: GameStatus = status;
       let nextWinner = state.winner;
       let nextWinMargin = state.winMargin;
       let nextTarget = target;
       let nextIsFreeHit = isFreeHit;
       let nextLastEvent: GameState['lastEvent'] = 'none';
+      let nextCommentary: string | null = null;
 
       // --- Update teams and player stats ---
       const battingTeam = newTeams[battingTeamIndex];
@@ -157,18 +178,18 @@ function gameReducer(state: GameState, action: any): GameState {
       const bowler = bowlingTeam.players.find(p => p.id === currentBowlerId)!;
 
       // 1. Update scores and basic stats
+      const runsBefore = striker.runs;
       currentInningsUpdate.score += delivery.runs + delivery.extraRuns;
       bowler.runsConceded += delivery.runs + delivery.extraRuns;
       if(isLegalDelivery) bowler.ballsBowled++;
       
       striker.runs += delivery.runs;
       if (isLegalDelivery) striker.balls++;
-      if (delivery.runs === 4) { striker.fours++; nextLastEvent = 'four'; }
-      if (delivery.runs === 6) { striker.sixes++; nextLastEvent = 'six'; }
+      if (delivery.runs === 4) { striker.fours++; }
+      if (delivery.runs === 6) { striker.sixes++; }
 
       // 2. Handle wicket
       if (delivery.isWicket) {
-        nextLastEvent = 'wicket';
         if (!isFreeHit) {
             currentInningsUpdate.wickets++;
             bowler.wicketsTaken++;
@@ -182,9 +203,29 @@ function gameReducer(state: GameState, action: any): GameState {
             }
         }
       }
+
+      // Determine the primary event for UI feedback with priority
+      if (delivery.isWicket && !isFreeHit) {
+        nextLastEvent = 'wicket';
+      } else if (delivery.runs === 6) {
+        nextLastEvent = 'six';
+      } else if (delivery.runs === 4) {
+        nextLastEvent = 'four';
+      } else if (delivery.isNoBall) {
+        nextLastEvent = 'noball';
+      } else if (delivery.isWide) {
+        nextLastEvent = 'wide';
+      }
       
       // 3. Update timeline
-      const ballForTimeline: Ball = { ...delivery, ballNumber: currentInningsUpdate.timeline.length + 1, overNumber: Math.floor(currentInningsUpdate.overs) + 1 };
+      const ballForTimeline: Ball = { 
+          ...delivery, 
+          ballNumber: currentInningsUpdate.timeline.length + 1, 
+          overNumber: Math.floor(currentInningsUpdate.overs) + 1,
+          shotDirection: action.payload?.shotDirection,
+          batsmanId: strikerId,
+          bowlerId: currentBowlerId,
+      };
       currentInningsUpdate.timeline.push(ballForTimeline);
 
       // 4. Update over progression and free hit status
@@ -212,6 +253,10 @@ function gameReducer(state: GameState, action: any): GameState {
       if (isOverFinished) { // End of over rotation
         [nextStrikerId, nextNonStrikerId] = [nextNonStrikerId, nextStrikerId];
       }
+      
+      // --- Generate Commentary ---
+      const tempNextState = { ...state, teams: newTeams, innings: newInnings, strikerId: nextStrikerId, nonStrikerId: nextNonStrikerId };
+      nextCommentary = generateCommentary(tempNextState, ballForTimeline, nextLastEvent, runsBefore);
 
       // 6. Check for end of innings / end of match
       const allOut = currentInningsUpdate.wickets >= settings.playersPerTeam - 1;
@@ -220,20 +265,24 @@ function gameReducer(state: GameState, action: any): GameState {
       if (currentInnings === 1 && (allOut || oversFinished)) {
           nextStatus = GameStatus.INNINGS_BREAK;
           nextTarget = currentInningsUpdate.score + 1;
+          nextCommentary = `That's the end of the first innings. ${battingTeam.name} are all out for ${currentInningsUpdate.score}. ${bowlingTeam.name} need ${nextTarget} to win.`;
       } else if (currentInnings === 2) {
           const targetReached = nextTarget && currentInningsUpdate.score >= nextTarget;
           if (targetReached) {
               nextStatus = GameStatus.FINISHED;
               nextWinner = newTeams[battingTeamIndex].name;
               nextWinMargin = `by ${settings.playersPerTeam - 1 - currentInningsUpdate.wickets} wickets`;
+              nextCommentary = `And that's the match! ${nextWinner} have won the game ${nextWinMargin}!`;
           } else if (allOut || oversFinished) {
               nextStatus = GameStatus.FINISHED;
               if (nextTarget && currentInningsUpdate.score === nextTarget - 1) {
                   nextWinner = "Match Tied";
                   nextWinMargin = "";
+                  nextCommentary = `Incredible scenes! The match is tied!`;
               } else {
                   nextWinner = newTeams[bowlingTeamIndex].name;
                   nextWinMargin = `by ${nextTarget! - currentInningsUpdate.score} runs`;
+                  nextCommentary = `And that's the match! ${nextWinner} have won the game ${nextWinMargin}!`;
               }
           }
       }
@@ -251,6 +300,7 @@ function gameReducer(state: GameState, action: any): GameState {
         winner: nextWinner,
         winMargin: nextWinMargin,
         lastEvent: nextLastEvent,
+        commentary: nextCommentary,
       };
     }
     
@@ -275,6 +325,7 @@ function gameReducer(state: GameState, action: any): GameState {
         nonStrikerId: secondInningsBattingTeam.players[1].id,
         currentBowlerId: null,
         isFreeHit: false,
+        commentary: `Welcome back for the second innings. ${secondInningsBattingTeam.name} are ready to chase down the target of ${state.target}.`,
       };
     }
 
@@ -286,10 +337,156 @@ function gameReducer(state: GameState, action: any): GameState {
   }
 }
 
+const UNDOABLE_ACTIONS = ['ADD_RUNS', 'ADD_EXTRA', 'ADD_WICKET'];
+const MAX_HISTORY_LENGTH = 20;
+
+interface HistoryState {
+  past: GameState[];
+  present: GameState;
+  future: GameState[];
+}
+
+function undoableGameReducer(state: HistoryState, action: any): HistoryState {
+  const { past, present, future } = state;
+
+  switch (action.type) {
+    case 'UNDO':
+      if (past.length === 0) return state;
+      const previousState = past[past.length - 1];
+      const newPast = past.slice(0, past.length - 1);
+      return {
+        past: newPast,
+        present: previousState,
+        future: [present, ...future],
+      };
+
+    case 'REDO':
+      if (future.length === 0) return state;
+      const nextState = future[0];
+      const newFuture = future.slice(1);
+      return {
+        past: [...past, present],
+        present: nextState,
+        future: newFuture,
+      };
+    
+    case 'NEW_GAME':
+      const newInitialState = gameReducer(present, action);
+      return {
+          past: [],
+          present: newInitialState,
+          future: [],
+      };
+
+    default:
+      const newPresent = gameReducer(present, action);
+
+      if (present === newPresent) {
+        return state;
+      }
+      
+      if (UNDOABLE_ACTIONS.includes(action.type)) {
+        const newPastWithCurrent = [...past, present];
+        const cappedPast = newPastWithCurrent.length > MAX_HISTORY_LENGTH 
+            ? newPastWithCurrent.slice(newPastWithCurrent.length - MAX_HISTORY_LENGTH) 
+            : newPastWithCurrent;
+        
+        return {
+          past: cappedPast,
+          present: newPresent,
+          future: [],
+        };
+      }
+      
+      return {
+        ...state,
+        present: newPresent,
+      };
+  }
+}
+
 function App() {
-  const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [historyState, dispatch] = useReducer(undoableGameReducer, {
+    past: [],
+    present: initialState,
+    future: [],
+  });
+  
+  const [isLoading, setIsLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [theme, setTheme] = useState<Theme>('dark');
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
+
+  const state = historyState.present;
+  
+  useEffect(() => {
+    // Handle initial theme setup from localStorage
+    const savedTheme = localStorage.getItem('stumped-theme') as Theme | null;
+    const initialTheme = savedTheme || 'dark';
+    setTheme(initialTheme);
+    document.documentElement.className = `theme-${initialTheme}`;
+
+    // Pre-load voices for speech synthesis
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+    }
+  }, []);
+
+  const handleSetTheme = (newTheme: Theme) => {
+    setTheme(newTheme);
+    localStorage.setItem('stumped-theme', newTheme);
+    document.documentElement.className = `theme-${newTheme}`;
+    setShowThemeMenu(false);
+  };
+  
+  useEffect(() => {
+    if (state.commentary && !isMuted && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(state.commentary);
+      utterance.rate = 1.1;
+      utterance.pitch = 1;
+      
+      const voices = window.speechSynthesis.getVoices();
+      
+      // Prioritize a male voice from GB or AU for a more authentic cricket feel.
+      let selectedVoice = voices.find(voice => 
+        (voice.lang.includes('en-GB') || voice.lang.includes('en-AU')) && 
+        (voice.name.includes('Male') || voice.name.includes('David') || voice.name.includes('Daniel') || voice.name.includes('Russell'))
+      );
+
+      // Fallback: any male English voice.
+      if (!selectedVoice) {
+        selectedVoice = voices.find(voice => 
+          voice.lang.startsWith('en-') && 
+          (voice.name.includes('Male') || voice.name.includes('David') || voice.name.includes('Google US English'))
+        );
+      }
+      
+      // Fallback: original logic if no specific male voice found
+      if (!selectedVoice) {
+        selectedVoice = voices.find(voice => voice.lang.includes('en-GB') || voice.lang.includes('en-AU'));
+      }
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+
+      window.speechSynthesis.speak(utterance);
+      
+      dispatch({ type: 'CLEAR_COMMENTARY' });
+    }
+  }, [state.commentary, isMuted]);
+
+  const handleAnimationComplete = () => {
+    setIsLoading(false);
+  };
+
+  if (isLoading) {
+    return <LoadingScreen onAnimationComplete={handleAnimationComplete} />;
+  }
 
   const renderContent = () => {
     switch (state.status) {
@@ -300,29 +497,60 @@ function App() {
         case GameStatus.IN_PROGRESS:
         case GameStatus.INNINGS_BREAK:
         case GameStatus.FINISHED:
-            return <ScoringScreen state={state} dispatch={dispatch} />;
+            return (
+              <ScoringScreen 
+                state={state} 
+                dispatch={dispatch} 
+                canUndo={historyState.past.length > 0} 
+                canRedo={historyState.future.length > 0} 
+              />
+            );
         default:
             return null;
     }
   }
 
   return (
-    <div className="bg-night text-stump-white min-h-screen font-sans" style={{backgroundImage: 'radial-gradient(circle at top, rgba(30, 66, 33, 0.5), transparent 40%)'}}>
-      <header className="bg-surface/80 backdrop-blur-sm sticky top-0 z-20 p-4 shadow-lg">
+    <div className="bg-background text-foreground min-h-screen font-sans app-background">
+      <header className="bg-card/70 backdrop-blur-sm sticky top-0 z-20 p-4 shadow-lg border-b border-border/50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-              <CricketBallIcon className="w-8 h-8 text-primary"/>
-              <h1 className="text-xl md:text-2xl font-bold">Cricket Scorer</h1>
+          <div className="flex items-center space-x-3">
+              <Logo className="w-8 h-8 text-primary"/>
+              <h1 className="text-xl md:text-2xl font-bold">Stumped!</h1>
           </div>
           {state.status !== GameStatus.SETUP && state.status !== GameStatus.TOSS && (
             <div className="flex items-center space-x-2">
-                <button onClick={() => setShowStats(true)} className="flex items-center space-x-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
-                    <StatsIcon className="w-5 h-5"/>
-                    <span className="hidden sm:inline">Stats</span>
+                <button onClick={() => setIsMuted(m => !m)} className="flex items-center justify-center w-10 h-10 bg-muted hover:bg-accent rounded-lg transition-colors" aria-label={isMuted ? 'Unmute commentary' : 'Mute commentary'}>
+                    {isMuted ? <SoundOffIcon className="w-5 h-5"/> : <SoundOnIcon className="w-5 h-5"/>}
                 </button>
-                <button onClick={() => setShowHistory(true)} className="flex items-center space-x-2 px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
+                 <div className="relative">
+                    <button onClick={() => setShowThemeMenu(s => !s)} className="flex items-center justify-center w-10 h-10 bg-muted hover:bg-accent rounded-lg transition-colors" aria-label="Change theme">
+                        <ThemeIcon className="w-5 h-5"/>
+                    </button>
+                    {showThemeMenu && (
+                        <div className="absolute top-full right-0 mt-2 w-40 bg-popover border border-border rounded-md shadow-lg z-10 animate-fade-in">
+                           <button onClick={() => handleSetTheme('light')} className="w-full flex items-center space-x-2 px-3 py-2 text-sm hover:bg-accent">
+                                <SunIcon className="w-4 h-4" />
+                                <span>Light</span>
+                           </button>
+                           <button onClick={() => handleSetTheme('dark')} className="w-full flex items-center space-x-2 px-3 py-2 text-sm hover:bg-accent">
+                                <MoonIcon className="w-4 h-4" />
+                                <span>Dark</span>
+                           </button>
+                           <button onClick={() => handleSetTheme('sunset')} className="w-full flex items-center space-x-2 px-3 py-2 text-sm hover:bg-accent">
+                                <ThemeIcon className="w-4 h-4" />
+                                <span>Sunset</span>
+                           </button>
+                        </div>
+                    )}
+                </div>
+                <button onClick={() => setShowStats(true)} className="flex items-center space-x-2 px-3 py-2 bg-muted hover:bg-accent rounded-lg transition-colors">
+                    <StatsIcon className="w-5 h-5"/>
+                    <span className="hidden sm:inline font-semibold">Scorecard</span>
+                </button>
+                <button onClick={() => setShowHistory(true)} className="flex items-center space-x-2 px-3 py-2 bg-muted hover:bg-accent rounded-lg transition-colors">
                     <HistoryIcon className="w-5 h-5"/>
-                    <span className="hidden sm:inline">History</span>
+                    <span className="hidden sm:inline font-semibold">History</span>
                 </button>
             </div>
           )}
@@ -332,7 +560,7 @@ function App() {
         {renderContent()}
         {state.status === GameStatus.FINISHED && <MatchSummary state={state} dispatch={dispatch} />}
         {state.innings[0] && <ScoreHistory innings={state.innings} isOpen={showHistory} onClose={() => setShowHistory(false)}/>}
-        {state.teams.length > 0 && <PlayerStats teams={state.teams} isOpen={showStats} onClose={() => setShowStats(false)} />}
+        {state.teams.length > 0 && <PlayerStats teams={state.teams} innings={state.innings} isOpen={showStats} onClose={() => setShowStats(false)} />}
       </main>
     </div>
   );

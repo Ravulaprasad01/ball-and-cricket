@@ -54,19 +54,19 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartMatch }) => {
   };
   
   const renderStepOne = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
-        <label htmlFor="teamOneName" className="block text-sm font-medium text-gray-300">Team One Name</label>
-        <input type="text" name="teamOneName" id="teamOneName" value={settings.teamOneName} onChange={handleInputChange} className="mt-1 block w-full bg-gray-900 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition-all duration-200" />
+        <label htmlFor="teamOneName" className="block text-sm font-medium text-muted-foreground">Team One Name</label>
+        <input type="text" name="teamOneName" id="teamOneName" value={settings.teamOneName} onChange={handleInputChange} className="mt-1 block w-full bg-input border border-border rounded-lg shadow-sm py-2 px-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:text-sm transition-all duration-200" />
       </div>
       <div>
-        <label htmlFor="teamTwoName" className="block text-sm font-medium text-gray-300">Team Two Name</label>
-        <input type="text" name="teamTwoName" id="teamTwoName" value={settings.teamTwoName} onChange={handleInputChange} className="mt-1 block w-full bg-gray-900 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition-all duration-200" />
+        <label htmlFor="teamTwoName" className="block text-sm font-medium text-muted-foreground">Team Two Name</label>
+        <input type="text" name="teamTwoName" id="teamTwoName" value={settings.teamTwoName} onChange={handleInputChange} className="mt-1 block w-full bg-input border border-border rounded-lg shadow-sm py-2 px-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:text-sm transition-all duration-200" />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="overs" className="block text-sm font-medium text-gray-300">Overs</label>
-          <select id="overs" name="overs" value={settings.overs} onChange={handleInputChange} className="mt-1 block w-full bg-gray-900 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition-all duration-200">
+          <label htmlFor="overs" className="block text-sm font-medium text-muted-foreground">Overs</label>
+          <select id="overs" name="overs" value={settings.overs} onChange={handleInputChange} className="mt-1 block w-full bg-input border border-border rounded-lg shadow-sm py-2 px-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:text-sm transition-all duration-200">
             <option value="5">5 Overs</option>
             <option value="10">10 Overs</option>
             <option value="20">20 Overs</option>
@@ -75,8 +75,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartMatch }) => {
           </select>
         </div>
         <div>
-          <label htmlFor="playersPerTeam" className="block text-sm font-medium text-gray-300">Players per Team</label>
-          <input type="number" name="playersPerTeam" id="playersPerTeam" min="2" max="11" value={settings.playersPerTeam} onChange={handleInputChange} className="mt-1 block w-full bg-gray-900 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition-all duration-200" />
+          <label htmlFor="playersPerTeam" className="block text-sm font-medium text-muted-foreground">Players per Team</label>
+          <input type="number" name="playersPerTeam" id="playersPerTeam" min="2" max="11" value={settings.playersPerTeam} onChange={handleInputChange} className="mt-1 block w-full bg-input border border-border rounded-lg shadow-sm py-2 px-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:text-sm transition-all duration-200" />
         </div>
       </div>
     </div>
@@ -88,14 +88,14 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartMatch }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto pr-2">
         {(team === 'teamOne' ? settings.teamOnePlayers : settings.teamTwoPlayers).map((_, index) => (
           <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
-            <label htmlFor={`${team}-player-${index}`} className="block text-sm font-medium text-gray-400">Player {index + 1}</label>
+            <label htmlFor={`${team}-player-${index}`} className="block text-sm font-medium text-muted-foreground">Player {index + 1}</label>
             <input
               type="text"
               id={`${team}-player-${index}`}
               placeholder={`Player ${index + 1} Name`}
               value={(team === 'teamOne' ? settings.teamOnePlayers : settings.teamTwoPlayers)[index]}
               onChange={(e) => handlePlayerNameChange(team, index, e.target.value)}
-              className="mt-1 block w-full bg-gray-900 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-primary focus:border-primary sm:text-sm transition-all duration-200"
+              className="mt-1 block w-full bg-input border border-border rounded-lg shadow-sm py-2 px-3 text-foreground focus:outline-none focus:ring-2 focus:ring-ring sm:text-sm transition-all duration-200"
             />
           </div>
         ))}
@@ -104,27 +104,27 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onStartMatch }) => {
   );
 
   const renderStepTwo = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {renderPlayerInputs(settings.teamOneName, 'teamOne')}
       {renderPlayerInputs(settings.teamTwoName, 'teamTwo')}
     </div>
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-night p-4">
-      <div className="w-full max-w-2xl mx-auto bg-surface rounded-2xl shadow-xl p-6 md:p-8">
-        <h2 className="text-3xl font-bold text-center text-white mb-2">New Match Setup</h2>
-        <p className="text-center text-gray-400 mb-8">Configure your cricket match</p>
+    <div className="min-h-screen flex items-center justify-center bg-transparent p-4 animate-slide-in-up">
+      <div className="w-full max-w-2xl mx-auto bg-card rounded-2xl shadow-2xl p-6 md:p-8 border border-border border-t-4 border-t-primary">
+        <h2 className="text-3xl font-bold text-center text-foreground mb-2">New Match Setup</h2>
+        <p className="text-center text-muted-foreground mb-8">Configure your cricket match</p>
         <form onSubmit={step === 1 ? handleNext : handleSubmit}>
           {step === 1 && renderStepOne()}
           {step === 2 && renderStepTwo()}
           <div className="mt-8 flex justify-end space-x-4">
             {step === 2 && (
-              <button type="button" onClick={() => setStep(1)} className="px-6 py-2 border border-gray-500 text-gray-300 rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 focus:ring-offset-surface transition-colors duration-200">
+              <button type="button" onClick={() => setStep(1)} className="px-6 py-2 border border-border text-muted-foreground rounded-lg shadow-sm hover:bg-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring focus:ring-offset-card transition-colors duration-200">
                 Back
               </button>
             )}
-            <button type="submit" className="px-6 py-2 border border-transparent text-white bg-primary rounded-md shadow-sm hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary focus:ring-offset-surface transition-colors duration-200">
+            <button type="submit" className="px-6 py-2 border border-transparent font-semibold text-primary-foreground bg-primary rounded-lg shadow-lg hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring focus:ring-offset-card transition-all duration-200 transform hover:scale-105">
               {step === 1 ? 'Next: Enter Players' : 'Proceed to Toss'}
             </button>
           </div>

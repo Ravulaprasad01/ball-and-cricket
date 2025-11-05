@@ -1,3 +1,5 @@
+export type ShotDirection = 'Fine Leg' | 'Square Leg' | 'Mid-Wicket' | 'Long On' | 'Straight' | 'Long Off' | 'Cover' | 'Point';
+
 export interface Player {
   id: number;
   name: string;
@@ -26,6 +28,9 @@ export interface Ball {
   extraRuns: number; // For runs off wides/no-balls
   ballNumber: number;
   overNumber: number;
+  shotDirection?: ShotDirection;
+  batsmanId: number;
+  bowlerId: number;
 }
 
 export interface Innings {
@@ -72,5 +77,6 @@ export interface GameState {
   winMargin: string | null;
   tossWinner: string | null;
   choseTo: 'Bat' | 'Bowl' | null;
-  lastEvent?: 'none' | 'four' | 'six' | 'wicket';
+  lastEvent?: 'none' | 'four' | 'six' | 'wicket' | 'wide' | 'noball';
+  commentary: string | null;
 }

@@ -49,7 +49,7 @@ const ScoreHistory: React.FC<ScoreHistoryProps> = ({ innings, isOpen, onClose })
         classes += 'bg-yellow-500 text-gray-900';
     } else if (ball.runs === 0 && !ball.isWide && !ball.isNoBall) {
         text = '•';
-        classes += 'bg-gray-600 text-gray-300';
+        classes += 'bg-muted text-muted-foreground';
     } else {
         classes += 'bg-gray-500 text-white';
     }
@@ -58,20 +58,20 @@ const ScoreHistory: React.FC<ScoreHistoryProps> = ({ innings, isOpen, onClose })
 
   const renderInningsHistory = (inningsData: Innings | null) => {
     if (!inningsData) {
-      return <p className="text-gray-400 text-center p-4">Innings has not started yet.</p>;
+      return <p className="text-muted-foreground text-center p-4">Innings has not started yet.</p>;
     }
     const summaries = calculateOverSummaries(inningsData.timeline);
     
     return (
         <div className="space-y-4">
-            <h4 className="text-xl font-bold text-white">{inningsData.battingTeam} - {inningsData.score}/{inningsData.wickets} <span className="text-base text-gray-400">({inningsData.overs.toFixed(1)} Ov)</span></h4>
+            <h4 className="text-xl font-bold text-foreground">{inningsData.battingTeam} - {inningsData.score}/{inningsData.wickets} <span className="text-base text-muted-foreground">({inningsData.overs.toFixed(1)} Ov)</span></h4>
             <div className="space-y-3 max-h-[calc(100vh-250px)] overflow-y-auto p-2 -mr-2">
             {summaries.map(({ over, runs, balls }, index) => (
-                <div key={over} className="p-3 bg-gray-900 rounded-lg animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+                <div key={over} className="p-3 bg-background/50 rounded-lg animate-fade-in border border-border" style={{ animationDelay: `${index * 50}ms` }}>
                     <div className="flex items-center space-x-4">
-                        <div className="text-sm text-gray-400 w-20">
+                        <div className="text-sm text-muted-foreground w-20">
                             <p>Over {over}</p>
-                            <p className="font-bold text-lg text-white">{runs} runs</p>
+                            <p className="font-bold text-lg text-foreground">{runs} runs</p>
                         </div>
                         <div className="flex flex-wrap gap-2 flex-1">
                             {balls.map(renderBall)}
@@ -85,20 +85,20 @@ const ScoreHistory: React.FC<ScoreHistoryProps> = ({ innings, isOpen, onClose })
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 z-40 flex items-center justify-center p-4">
-        <div className="bg-surface rounded-lg p-6 h-full w-full max-w-2xl relative shadow-2xl">
-            <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white">&times;</button>
+    <div className="fixed inset-0 bg-black bg-opacity-70 z-40 flex items-center justify-center p-4 animate-fade-in">
+        <div className="bg-card/70 backdrop-blur-lg border border-border border-t-4 border-t-primary rounded-xl p-6 h-full w-full max-w-2xl relative shadow-2xl animate-pop-in">
+            <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-3xl z-10">&times;</button>
             <h3 className="text-2xl font-bold mb-4 text-primary">Score History</h3>
-            <div className="flex border-b border-gray-700 mb-4">
+            <div className="flex border-b border-border mb-4">
                 <button
-                className={`py-2 px-4 text-sm font-medium transition-colors ${activeInnings === 1 ? 'border-b-2 border-primary text-white' : 'text-gray-400'}`}
+                className={`py-2 px-4 text-sm font-medium transition-colors ${activeInnings === 1 ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground'}`}
                 onClick={() => setActiveInnings(1)}
                 >
                 Innings 1
                 </button>
                 {innings[1] && (
                 <button
-                    className={`py-2 px-4 text-sm font-medium transition-colors ${activeInnings === 2 ? 'border-b-2 border-primary text-white' : 'text-gray-400'}`}
+                    className={`py-2 px-4 text-sm font-medium transition-colors ${activeInnings === 2 ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground'}`}
                     onClick={() => setActiveInnings(2)}
                 >
                     Innings 2

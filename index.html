@@ -1,28 +1,163 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="theme-dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3ccircle cx='50' cy='50' r='50' fill='%234CAF50' /%3e%3cg fill='white'%3e%3crect x='28' y='35' width='8' height='40' rx='4' /%3e%3crect x='46' y='35' width='8' height='40' rx='4' /%3e%3crect x='64' y='35' width='8' height='40' rx='4' /%3e%3crect x='28' y='30' width='26' height='7' rx='3.5' /%3e%3cg transform='rotate(-25 69 33.5) translate(5 -10)'%3e%3crect x='46' y='30' width='26' height='7' rx='3.5' /%3e%3c/g%3e%3c/g%3e%3c/svg%3e" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cricket Score Tracker</title>
+    <title>Stumped! - Modern Cricket Scorer</title>
+    <style>
+      :root, .theme-dark {
+        --background: 222.2 47.4% 11.2%;
+        --foreground: 210 40% 98%;
+        --card: 222.2 47.4% 17.2%;
+        --card-foreground: 210 40% 98%;
+        --popover: 222.2 47.4% 11.2%;
+        --popover-foreground: 210 40% 98%;
+        --primary: 122.4 39.4% 50.2%;
+        --primary-foreground: 210 40% 98%;
+        --secondary: 45 100% 51.6%;
+        --secondary-foreground: 222.2 47.4% 11.2%;
+        --muted: 217.2 32.6% 23.5%;
+        --muted-foreground: 215 20.2% 65.1%;
+        --accent: 217.2 32.6% 23.5%;
+        --accent-foreground: 210 40% 98%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 217.2 32.6% 23.5%;
+        --input: 217.2 32.6% 23.5%;
+        --ring: 122.4 39.4% 50.2%;
+        --cricket-green-dark: 146 65% 30%;
+        --pitch-brown: 39 92% 32%;
+        --stump-white: 210 20% 98%;
+      }
+      .theme-light {
+        --background: 0 0% 100%;
+        --foreground: 222.2 47.4% 11.2%;
+        --card: 0 0% 97%;
+        --card-foreground: 222.2 47.4% 11.2%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 222.2 47.4% 11.2%;
+        --primary: 122.4 39.4% 45.2%;
+        --primary-foreground: 210 40% 98%;
+        --secondary: 45 95% 48.6%;
+        --secondary-foreground: 222.2 47.4% 11.2%;
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+        --accent: 210 40% 96.1%;
+        --accent-foreground: 222.2 47.4% 11.2%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 214.3 31.8% 91.4%;
+        --input: 214.3 31.8% 91.4%;
+        --ring: 122.4 39.4% 45.2%;
+        --cricket-green-dark: 145 65% 40%;
+        --pitch-brown: 35 78% 59%;
+        --stump-white: 220 13% 28%;
+      }
+      .theme-sunset {
+        --background: 256 20% 12%;
+        --foreground: 36 80% 95%;
+        --card: 256 20% 18%;
+        --card-foreground: 36 80% 95%;
+        --popover: 256 20% 12%;
+        --popover-foreground: 36 80% 95%;
+        --primary: 348 83% 61%;
+        --primary-foreground: 356 100% 97%;
+        --secondary: 36 95% 65%;
+        --secondary-foreground: 48 98% 10%;
+        --muted: 256 20% 25%;
+        --muted-foreground: 240 4% 65%;
+        --accent: 256 20% 25%;
+        --accent-foreground: 36 80% 95%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 36 80% 95%;
+        --border: 256 20% 25%;
+        --input: 256 20% 25%;
+        --ring: 348 83% 61%;
+        --cricket-green-dark: 150 50% 35%;
+        --pitch-brown: 30 60% 55%;
+        --stump-white: 36 80% 95%;
+      }
+      .app-background {
+        position: relative;
+        overflow: hidden;
+        background-color: hsl(var(--cricket-green-dark));
+        background-image: 
+            radial-gradient(ellipse at 50% 30%, hsla(0, 0%, 100%, 0.1) 0%, transparent 70%),
+            repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 20px,
+                hsl(var(--cricket-green-dark) / 0.9) 20px,
+                hsl(var(--cricket-green-dark) / 0.9) 40px
+            );
+        background-size: 100% 100%, 56px 56px;
+        animation: background-pan 60s linear infinite;
+      }
+      .loading-stadium-bg {
+          background-color: #0a140a;
+          background-image: 
+              radial-gradient(ellipse at 50% -50%, hsla(80, 40%, 70%, 0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 10%, hsla(80, 40%, 70%, 0.1) 0%, transparent 40%),
+              radial-gradient(ellipse at 80% 10%, hsla(80, 40%, 70%, 0.1) 0%, transparent 40%);
+      }
+      .ball-container-3d {
+          width: 8rem; /* 128px */
+          height: 8rem; /* 128px */
+          perspective: 1000px;
+      }
+      .animate-ball-spin {
+          width: 100%;
+          height: 100%;
+          transform-style: preserve-3d;
+          animation: ball-spin-kf 3s linear infinite;
+      }
+      .animate-ball-glow { animation: ball-glow-kf 2s ease-in-out infinite; }
+      .animate-logo-fade-in { animation: logo-fade-in-kf 1s ease-out 1.5s forwards; opacity: 0; }
+    </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              'cricket-green': {
-                'light': '#3a8c41',
-                'DEFAULT': '#2a5c2e',
-                'dark': '#1e4221',
+              border: 'hsl(var(--border))',
+              input: 'hsl(var(--input))',
+              ring: 'hsl(var(--ring))',
+              background: 'hsl(var(--background))',
+              foreground: 'hsl(var(--foreground))',
+              primary: {
+                DEFAULT: 'hsl(var(--primary))',
+                foreground: 'hsl(var(--primary-foreground))',
               },
-              'pitch-brown': '#b9a18c',
-              'stump-white': '#f5f5f5',
-              'ball-red': '#b53737',
-              'night': '#121212',
-              'surface': '#1e1e1e',
-              'primary': '#4CAF50',
-              'secondary': '#FFC107',
+              secondary: {
+                DEFAULT: 'hsl(var(--secondary))',
+                foreground: 'hsl(var(--secondary-foreground))',
+              },
+              destructive: {
+                DEFAULT: 'hsl(var(--destructive))',
+                foreground: 'hsl(var(--destructive-foreground))',
+              },
+              muted: {
+                DEFAULT: 'hsl(var(--muted))',
+                foreground: 'hsl(var(--muted-foreground))',
+              },
+              accent: {
+                DEFAULT: 'hsl(var(--accent))',
+                foreground: 'hsl(var(--accent-foreground))',
+              },
+              popover: {
+                DEFAULT: 'hsl(var(--popover))',
+                foreground: 'hsl(var(--popover-foreground))',
+              },
+              card: {
+                DEFAULT: 'hsl(var(--card))',
+                foreground: 'hsl(var(--card-foreground))',
+              },
+              'ball-red': '#EF4444',
+              'cricket-green-dark': 'hsl(var(--cricket-green-dark))',
+              'pitch-brown': 'hsl(var(--pitch-brown))',
+              'stump-white': 'hsl(var(--stump-white))',
             },
             fontFamily: {
               sans: ['Poppins', 'Inter', 'sans-serif'],
@@ -30,11 +165,18 @@
             animation: {
               'coin-flip': 'coin-flip 1s ease-out forwards',
               'fade-in': 'fade-in 0.5s ease-out forwards',
-              'pop-in': 'pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+              'pop-in': 'pop-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+              'slide-in-up': 'slide-in-up 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards',
+              'subtle-pop': 'subtle-pop 0.3s ease-in-out forwards',
+              'ball-pop': 'ball-pop 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards',
               'boundary-4-glow': 'boundary-4-glow 1.5s ease-out forwards',
               'boundary-6-glow': 'boundary-6-glow 1.5s ease-out forwards',
               'wicket-glow': 'wicket-glow 1.5s ease-out forwards',
+              'glow-primary': 'glow-primary 1s ease-out forwards',
               'event-burst': 'event-burst 1.5s ease-in-out forwards',
+              'background-pan': 'background-pan 60s linear infinite',
+              'subtle-pulse': 'subtle-pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'loading-container-fade-out': 'loading-container-fade-out-kf 4s ease-in forwards',
             },
             keyframes: {
               'coin-flip': {
@@ -47,51 +189,92 @@
                 'to': { opacity: '1', transform: 'translateY(0)' },
               },
               'pop-in': {
-                '0%': { transform: 'scale(0.8)', opacity: '0' },
+                '0%': { transform: 'scale(0.95)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' },
+              },
+              'slide-in-up': {
+                'from': { opacity: '0', transform: 'translateY(20px)' },
+                'to': { opacity: '1', transform: 'translateY(0)' },
+              },
+              'subtle-pop': {
+                '0%': { transform: 'scale(1)' },
+                '50%': { transform: 'scale(1.05)' },
+                '100%': { transform: 'scale(1)' },
+              },
+              'ball-pop': {
+                '0%': { transform: 'scale(0.5)', opacity: '0' },
+                '50%': { transform: 'scale(1.15)', opacity: '1' },
+                '80%': { transform: 'scale(0.95)', opacity: '1' },
                 '100%': { transform: 'scale(1)', opacity: '1' },
               },
               'boundary-4-glow': {
                 '0%': { boxShadow: '0 0 0 0 rgba(59, 130, 246, 0)' },
-                '50%': { boxShadow: '0 0 25px 10px rgba(59, 130, 246, 0.5)' },
-                '100%': { boxShadow: '0 0 50px 20px rgba(59, 130, 246, 0)' },
+                '50%': { boxShadow: '0 0 20px 8px rgba(59, 130, 246, 0.4)' },
+                '100%': { boxShadow: '0 0 40px 15px rgba(59, 130, 246, 0)' },
               },
               'boundary-6-glow': {
                 '0%': { boxShadow: '0 0 0 0 rgba(168, 85, 247, 0)' },
-                '50%': { boxShadow: '0 0 25px 10px rgba(168, 85, 247, 0.5)' },
-                '100%': { boxShadow: '0 0 50px 20px rgba(168, 85, 247, 0)' },
+                '50%': { boxShadow: '0 0 20px 8px rgba(168, 85, 247, 0.4)' },
+                '100%': { boxShadow: '0 0 40px 15px rgba(168, 85, 247, 0)' },
               },
               'wicket-glow': {
                 '0%': { boxShadow: '0 0 0 0 rgba(239, 68, 68, 0)' },
-                '50%': { boxShadow: '0 0 25px 10px rgba(239, 68, 68, 0.6)' },
-                '100%': { boxShadow: '0 0 50px 20px rgba(239, 68, 68, 0)' },
+                '50%': { boxShadow: '0 0 20px 8px rgba(239, 68, 68, 0.4)' },
+                '100%': { boxShadow: '0 0 40px 15px rgba(239, 68, 68, 0)' },
+              },
+              'glow-primary': {
+                '0%': { filter: 'drop-shadow(0 0 0px hsl(var(--primary)))' },
+                '50%': { filter: 'drop-shadow(0 0 15px hsl(var(--primary)))' },
+                '100%': { filter: 'drop-shadow(0 0 0px hsl(var(--primary)))' },
               },
               'event-burst': {
-                '0%': { opacity: '0', transform: 'scale(0.6) rotate(-10deg)' },
-                '30%': { opacity: '1', transform: 'scale(1.1) rotate(2deg)' },
-                '80%': { opacity: '1', transform: 'scale(1.1) rotate(2deg)' },
-                '100%': { opacity: '0', transform: 'scale(1.5) rotate(5deg)' },
-              }
+                '0%': { transform: 'scale(0.5)', opacity: '0' },
+                '50%': { transform: 'scale(1.2)', opacity: '0.8' },
+                '100%': { transform: 'scale(1.5)', opacity: '0' },
+              },
+              'background-pan': {
+                '0%': { backgroundPosition: '50% 30%, 0 0' },
+                '100%': { backgroundPosition: '50% 30%, 56px 56px' }
+              },
+              'subtle-pulse': {
+                '0%, 100%': { filter: 'drop-shadow(0 0 6px hsl(var(--primary) / 0.6))' },
+                '50%': { filter: 'drop-shadow(0 0 20px hsl(var(--primary) / 0.8))' }
+              },
+              'loading-container-fade-out-kf': {
+                '0%, 85%': { opacity: '1', visibility: 'visible' },
+                '100%': { opacity: '0', visibility: 'hidden' },
+              },
+              'ball-spin-kf': {
+                'from': { transform: 'rotateY(0deg) rotateX(5deg)' },
+                'to': { transform: 'rotateY(360deg) rotateX(5deg)' }
+              },
+              'ball-glow-kf': {
+                  '0%, 100%': { filter: 'drop-shadow(0 0 8px hsl(var(--secondary) / 0.6))' },
+                  '50%': { filter: 'drop-shadow(0 0 20px hsl(var(--secondary) / 0.9))' }
+              },
+              'logo-fade-in-kf': {
+                  'from': { opacity: '0', transform: 'translateY(15px) scale(0.95)' },
+                  'to': { opacity: '1', transform: 'translateY(0) scale(1)' }
+              },
             }
-          },
-        },
+          }
+        }
       }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://rsms.me/">
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
   <script type="importmap">
 {
   "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0"
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
   }
 }
 </script>
 </head>
-  <body class="bg-night text-white font-sans">
+  <body class="bg-background">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>
